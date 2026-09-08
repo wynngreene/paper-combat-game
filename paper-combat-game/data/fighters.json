@@ -1,0 +1,25 @@
+{
+  "fighters": [
+    {
+      "id": "sticky_sam",
+      "name": "Sticky Sam",
+      "item": "Glue Stick",
+      "tier": "school",
+      "archetype": "rush",
+      "tech": "sticky",
+      "body": "notebook_paper",
+      "color": "#D9A62B"
+    },
+    {
+      "id": "whip_fighter",
+      "name": "Whip Fighter",
+      "item": "Tape Dispenser",
+      "tier": "office",
+      "archetype": "rush",
+      "tech": "sticky",
+      "body": "cardstock",
+      "color": "#1D4ED8"
+    }
+  ],
+  "_notes": "Stub roster. The character-select screen in app.js currently generates all 18 fighter names/colors inline (ROSTER_NAMES, ARCH_COLOR) rather than reading this file yet. Wiring app.js to load from here instead of its inline data is the next real step once more fighters are rigged."
+}

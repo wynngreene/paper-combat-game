@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Paper Combat Game</title>
+<meta name="description" content="Paper Combat Game — a paper puppet fighting/platforming game. School vs. Office, 18 fighters.">
+<meta name="theme-color" content="#14171A">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ============ SCREEN 1: TITLE ============ -->
+  <section class="screen active" id="screen-title">
+    <canvas id="particle-canvas"></canvas>
+
+    <div class="title-top">
+      <h1>PAPER COMBAT GAME</h1>
+      <div class="tagline">School vs. Office &middot; 18 Fighters</div>
+    </div>
+
+    <div class="title-center">
+      <button id="play-btn">Play</button>
+      <div id="play-sub">Tap to Start</div>
+    </div>
+
+    <div class="title-footer">
+      <div class="footer-stats">
+        <div class="stat"><b id="stat-matches-title">0</b>Matches</div>
+        <div class="stat"><b id="stat-wins-title">0</b>Wins</div>
+        <div class="stat"><b>2 / 18</b>Unlocked</div>
+      </div>
+      <div class="footer-version">v0.1.0-prototype &middot; DESK WARS</div>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN 2: CHARACTER SELECT ============ -->
+  <section class="screen" id="screen-select">
+    <div class="cs-header">
+      <h2>Select Fighters</h2>
+      <button class="back-btn" data-goto="screen-title">Back</button>
+    </div>
+
+    <div class="tier-tabs">
+      <button class="tier-tab active" data-tier="school">School</button>
+      <button class="tier-tab" data-tier="office">Office</button>
+    </div>
+
+    <div class="roster-wrap">
+      <div class="roster-grid" id="roster-grid"></div>
+    </div>
+
+    <div class="select-footer">
+      <div class="select-hint" id="select-hint">Selecting for Player 1</div>
+      <div class="slots">
+        <div class="slot p1 active-slot" id="slot-p1">
+          <div class="slot-label">PLAYER 1</div>
+          <div class="slot-fighter">&mdash;</div>
+          <div class="slot-sub">&nbsp;</div>
+        </div>
+        <div class="slot p2" id="slot-p2">
+          <div class="slot-label">PLAYER 2</div>
+          <div class="slot-fighter">&mdash;</div>
+          <div class="slot-sub">&nbsp;</div>
+          <button class="cpu-toggle active" id="cpu-toggle">CPU: ON</button>
+        </div>
+      </div>
+      <div class="mode-btns">
+        <button id="platform-mode-btn" disabled>Platform View</button>
+        <button id="battle-mode-btn" disabled>Battle</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN 3: BATTLE ============ -->
+  <section class="screen" id="screen-battle">
+    <div class="battle-main">
+      <div class="battle-hud">
+        <div class="hp-block p1">
+          <div class="hp-name" id="hud-p1-name">P1</div>
+          <div class="hp-bar-track"><div class="hp-bar-fill" id="hud-p1-bar"></div></div>
+          <div class="hp-cond" id="hud-p1-cond">Pristine</div>
+        </div>
+        <div class="round-timer" id="round-timer">60</div>
+        <div class="hp-block p2">
+          <div class="hp-name" id="hud-p2-name">P2 (CPU)</div>
+          <div class="hp-bar-track"><div class="hp-bar-fill" id="hud-p2-bar"></div></div>
+          <div class="hp-cond" id="hud-p2-cond">Pristine</div>
+        </div>
+      </div>
+
+      <div id="battle-arena">
+        <div id="battle-callout">Idle</div>
+        <div id="battle-ground"></div>
+        <div class="b-fighter p1" id="b-fighter-p1"></div>
+        <div class="b-fighter p2" id="b-fighter-p2"></div>
+        <div id="kb-hint">Keyboard: Arrows move &middot; D attack &middot; A defend &middot; S move-action &middot; W special</div>
+      </div>
+    </div>
+
+    <div class="battle-controls">
+      <div class="pad" id="b-dpad">
+        <div class="empty"></div><button data-dir="up">&uarr;</button><div class="empty"></div>
+        <button data-dir="left">&larr;</button><div class="empty"></div><button data-dir="right">&rarr;</button>
+        <div class="empty"></div><button data-dir="down">&darr;</button><div class="empty"></div>
+      </div>
+      <button class="exit-battle" data-goto="screen-select">Exit</button>
+      <div class="diamond">
+        <button class="diamond-btn pos-top color-special" id="b-special" data-action="special"></button>
+        <button class="diamond-btn pos-left color-defend" id="b-defend" data-action="defend"></button>
+        <button class="diamond-btn pos-right color-attack" id="b-attack" data-action="attack"></button>
+        <button class="diamond-btn pos-bottom color-movement" id="b-movement" data-action="movement"></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN 4: PLATFORM VIEW (Player 1 solo) ============ -->
+  <section class="screen" id="screen-platform">
+    <div class="cs-header">
+      <h2>Platform View &mdash; <span id="pf-fighter-name">&mdash;</span></h2>
+      <button class="back-btn" data-goto="screen-select">Back</button>
+    </div>
+
+    <div class="battle-main">
+      <div id="pf-arena">
+        <div id="pf-callout">Idle</div>
+        <div id="pf-dir-label">dir: neutral &middot; ground</div>
+        <div id="pf-anim-state">anim: idle</div>
+        <div id="pf-ground"></div>
+        <div id="pf-landmarks"></div>
+        <div id="pf-fighter"></div>
+        <div id="pf-kb-hint">Keyboard: Arrows move &middot; D attack &middot; A defend &middot; S move-action &middot; W special</div>
+      </div>
+    </div>
+
+    <div class="battle-controls">
+      <div class="pad" id="pf-dpad">
+        <div class="empty"></div><button data-dir="up">&uarr;</button><div class="empty"></div>
+        <button data-dir="left">&larr;</button><div class="empty"></div><button data-dir="right">&rarr;</button>
+        <div class="empty"></div><button data-dir="down">&darr;</button><div class="empty"></div>
+      </div>
+      <button class="exit-battle" data-goto="screen-select">Exit</button>
+      <div class="diamond">
+        <button class="diamond-btn pos-top color-special" id="pf-special" data-action="special"></button>
+        <button class="diamond-btn pos-left color-defend" id="pf-defend" data-action="defend"></button>
+        <button class="diamond-btn pos-right color-attack" id="pf-attack" data-action="attack"></button>
+        <button class="diamond-btn pos-bottom color-movement" id="pf-movement" data-action="movement"></button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
