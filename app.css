@@ -235,7 +235,11 @@
     .fighter-card .swatch { width: 40px; height: 40px; }
     .fighter-card .fname { font-size: 12px; }
 
-    #screen-battle { flex-direction: row; gap: 14px; padding-top: calc(var(--safe-t) + 14px); }
+    /* FIX: #screen-platform was missing here, so on desktop its arena and
+       controls stayed stacked in a column instead of sitting side-by-side
+       like Battle's do. .battle-controls/.battle-main are shared classes
+       between the two screens, so both screen IDs must get this rule. */
+    #screen-battle, #screen-platform { flex-direction: row; gap: 14px; padding-top: calc(var(--safe-t) + 14px); }
     .battle-controls { flex-direction: column; gap: 16px; width: 160px; flex: 0 0 auto; }
     .pad, .diamond { justify-self: center; }
   }
@@ -245,4 +249,33 @@
     .diamond-btn { width: 38px; height: 38px; }
     .pad { grid-template-columns: repeat(3, 28px); grid-template-rows: repeat(3, 28px); }
     .roster-grid { grid-template-columns: repeat(3, minmax(64px, 84px)); gap: 7px; }
+  }
+
+  /* ================= Responsive: desktop / wide viewports ================= */
+  /* This app was built mobile-first with no treatment above ~640px other than
+     the landscape rule for Battle/Platform above. On an actual desktop
+     monitor (900px+), Title and Character Select content was stretching
+     edge-to-edge or floating with no width constraint, which read as
+     "broken" rather than just "spacious." This caps content to a centered,
+     comfortably-readable column instead. */
+  @media (min-width: 900px) {
+    .title-top, .title-footer {
+      max-width: 640px; margin-left: auto; margin-right: auto;
+    }
+
+    #screen-select .cs-header,
+    #screen-select .tier-tabs,
+    #screen-select .select-footer {
+      max-width: 640px; width: 100%; margin-left: auto; margin-right: auto;
+    }
+
+    .roster-grid { grid-template-columns: repeat(3, minmax(100px, 130px)); gap: 16px; }
+    .fighter-card .swatch { width: 44px; height: 44px; }
+    .fighter-card .fname { font-size: 13px; }
+
+    /* Give the arena more visual weight on a big screen instead of a tiny
+       square floating next to a skinny control column */
+    .diamond { width: 148px; height: 148px; }
+    .diamond-btn { width: 50px; height: 50px; }
+    .battle-controls { width: 190px; }
   }
