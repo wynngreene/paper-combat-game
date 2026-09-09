@@ -13,8 +13,16 @@
   // Each new release: bump CURRENT_VERSION and add an entry to the FRONT
   // of CHANGELOG (newest first). The footer tag and version-history modal
   // both read from this array — nothing else needs to change by hand.
-  var CURRENT_VERSION = 'v0.1.2';
+  var CURRENT_VERSION = 'v0.1.3';
   var CHANGELOG = [
+    {
+      version: 'v0.1.3',
+      date: '2026-09-09',
+      notes: [
+        'Fixed arena being too small in the desktop/landscape layout: it was width-bound by a circular measurement (using its own shrink-to-fit container to size itself) instead of using the full available height, so it now grows to fill 100% of the vertical space on both Battle and Platform View',
+        'Arena sizing now correctly accounts for the D-pad/diamond/Exit controls even though they render as a "display: contents" group, which was previously being miscounted as a single zero-width item'
+      ]
+    },
     {
       version: 'v0.1.2',
       date: '2026-09-09',
@@ -107,16 +115,58 @@
   // physics). Keeping this ONE function used by both screens is what
   // avoids the classic bug in this project where a fix lands on one
   // screen and not the other.
+  // Expands any `display: contents` wrapper (e.g. .battle-controls) into
+  // its own children instead of counting it as a single box — a
+  // `display:contents` element has no rendered box of its own (its
+  // children become the real flex participants) but DOM APIs like
+  // `.children` still see it as one node, so a naive width sum silently
+  // gets a wrong (near-zero) answer for that item.
+  function expandedChildren(container) {
+    var out = [];
+    Array.prototype.forEach.call(container.children, function (child) {
+      if (getComputedStyle(child).display === 'contents') {
+        out = out.concat(expandedChildren(child));
+      } else {
+        out.push(child);
+      }
+    });
+    return out;
+  }
   function sizeArenaSquare(arenaEl) {
     if (!arenaEl) return;
-    var parent = arenaEl.parentElement;
+    var parent = arenaEl.parentElement; // .battle-main
     var parentRect = parent.getBoundingClientRect();
     var usedHeight = 0;
     Array.prototype.forEach.call(parent.children, function (sibling) {
       if (sibling !== arenaEl) usedHeight += sibling.offsetHeight;
     });
-    var availW = parentRect.width;
     var availH = parentRect.height - usedHeight;
+
+    var availW;
+    var screenEl = parent.closest('.screen');
+    var isRow = screenEl && getComputedStyle(screenEl).flexDirection === 'row';
+    if (isRow) {
+      // In the desktop/landscape row, .battle-main is itself `flex: 0 0
+      // auto` (shrink-to-fit) — measuring its own rect for availW would be
+      // circular, since the arena we're about to size lives inside it and
+      // feeds that shrink-to-fit width. Instead, work out how much row
+      // width is left for .battle-main by subtracting every OTHER
+      // top-level row item (pad, diamond, exit-battle — unwrapped from
+      // .battle-controls — and, on Platform View, the .cs-header) plus the
+      // row gaps, from the screen's own content width.
+      var screenRect = screenEl.getBoundingClientRect();
+      var screenCS = getComputedStyle(screenEl);
+      var padLR = (parseFloat(screenCS.paddingLeft) || 0) + (parseFloat(screenCS.paddingRight) || 0);
+      var gap = parseFloat(screenCS.columnGap || screenCS.gap) || 0;
+      var others = expandedChildren(screenEl).filter(function (el) { return el !== parent; });
+      var otherWidth = 0;
+      others.forEach(function (el) { otherWidth += el.getBoundingClientRect().width; });
+      var gapsTotal = gap * others.length; // one gap between .battle-main and each other item
+      availW = screenRect.width - padLR - otherWidth - gapsTotal;
+    } else {
+      availW = parentRect.width;
+    }
+
     var side = Math.max(0, Math.min(availW, availH));
     arenaEl.style.width = side + 'px';
     arenaEl.style.height = side + 'px';
