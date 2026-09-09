@@ -206,15 +206,20 @@
   .round-timer { font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 700; width: 46px; text-align: center; flex: 0 0 auto; padding-top: 2px; }
 
   #battle-arena, #pf-arena {
-    flex: 1; position: relative; border-radius: 10px; border: 1px solid var(--border);
+    position: relative; border-radius: 10px; border: 1px solid var(--border);
     overflow: hidden; background: var(--panel); min-height: 0;
     background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
     background-size: 20px 20px; background-position: center;
-    /* Perfect 1:1 square: height still comes from flex:1 (fills whatever
-       vertical space is available in .battle-main), width is then derived
-       from that height via aspect-ratio instead of stretching to the
-       column's full width. max-width guards the rare case where the
-       height-derived width would be wider than the available column. */
+    /* Perfect 1:1 square: app.js measures the real available box and sets
+       an explicit pixel width + height (sizeArenaSquare()). This element
+       must NOT use flex:1/flex-grow here — flex-grow's shorthand sets
+       flex-basis:0%, which makes the browser compute this item's main-axis
+       size (height, inside .battle-main's column) purely from growth and
+       ignore any explicit height entirely, no matter what JS sets. With
+       flex:0 0 auto instead, an explicit height is respected. align-self
+       keeps the (explicit) width from being stretched to the column's
+       full width; aspect-ratio is just a harmless pre-JS fallback. */
+    flex: 0 0 auto;
     aspect-ratio: 1 / 1;
     align-self: center;
     max-width: 100%;

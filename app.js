@@ -13,8 +13,17 @@
   // Each new release: bump CURRENT_VERSION and add an entry to the FRONT
   // of CHANGELOG (newest first). The footer tag and version-history modal
   // both read from this array — nothing else needs to change by hand.
-  var CURRENT_VERSION = 'v0.1.1';
+  var CURRENT_VERSION = 'v0.1.2';
   var CHANGELOG = [
+    {
+      version: 'v0.1.2',
+      date: '2026-09-09',
+      notes: [
+        'Arena is now a true 1:1 square on both Battle and Platform View, measured and sized in JS instead of via CSS aspect-ratio (which couldn’t size correctly inside the desktop layout’s shrink-to-fit column)',
+        'Desktop/landscape layout: D-pad, arena, and action diamond + Exit are now one centered horizontal cluster (pad left, arena center, diamond right) instead of the arena and controls being pinned to opposite edges',
+        'Title screen particle effect is now a centered square panel instead of a full-screen background'
+      ]
+    },
     {
       version: 'v0.1.1',
       date: '2026-09-08',
@@ -86,6 +95,47 @@
   window.addEventListener('resize', updateModeBadge);
   window.addEventListener('orientationchange', updateModeBadge);
   updateModeBadge();
+
+  // ---------- Shared: square arena sizing (Battle + Platform View) ----------
+  // Both arenas must render as a perfect 1:1 square in every layout: the
+  // mobile stacked column (arena on top, controls at the bottom) and the
+  // desktop/landscape row (D-pad left, arena centered, diamond+Exit
+  // right). CSS alone can't do this reliably here — see the comment on
+  // #battle-arena, #pf-arena in app.css — so this measures the real
+  // available box and sets an explicit pixel width/height (the same
+  // "measure, then set" approach pfLayout() below already uses for
+  // physics). Keeping this ONE function used by both screens is what
+  // avoids the classic bug in this project where a fix lands on one
+  // screen and not the other.
+  function sizeArenaSquare(arenaEl) {
+    if (!arenaEl) return;
+    var parent = arenaEl.parentElement;
+    var parentRect = parent.getBoundingClientRect();
+    var usedHeight = 0;
+    Array.prototype.forEach.call(parent.children, function (sibling) {
+      if (sibling !== arenaEl) usedHeight += sibling.offsetHeight;
+    });
+    var availW = parentRect.width;
+    var availH = parentRect.height - usedHeight;
+    var side = Math.max(0, Math.min(availW, availH));
+    arenaEl.style.width = side + 'px';
+    arenaEl.style.height = side + 'px';
+  }
+  var battleArenaEl = document.getElementById('battle-arena');
+  var platformArenaEl = document.getElementById('pf-arena');
+  function sizeAllArenas() {
+    sizeArenaSquare(battleArenaEl);
+    sizeArenaSquare(platformArenaEl);
+    if (typeof pfLayout === 'function') pfLayout(); // refresh physics wrapW/wrapH against the new square size
+  }
+  window.addEventListener('resize', sizeAllArenas);
+  window.addEventListener('orientationchange', sizeAllArenas);
+  // Catches the display:none -> visible transition when a screen becomes
+  // active, which the resize listeners above would miss on their own.
+  if (window.ResizeObserver) {
+    new ResizeObserver(sizeAllArenas).observe(document.getElementById('screen-battle'));
+    new ResizeObserver(sizeAllArenas).observe(document.getElementById('screen-platform'));
+  }
 
   // ---------- Screen navigation ----------
   function goto(id) {
@@ -261,6 +311,7 @@
     document.getElementById('b-fighter-p1').style.background = ARCH_COLOR[selection.p1.arch];
     document.getElementById('b-fighter-p2').style.background = ARCH_COLOR[selection.p2.arch];
     goto('screen-battle');
+    sizeArenaSquare(battleArenaEl);
   });
 
   document.getElementById('platform-mode-btn').addEventListener('click', function () {
@@ -420,6 +471,7 @@
     pfSetHeldDir('neutral');
     document.getElementById('pf-fighter-name').textContent = p1Selection.name;
     pfFighterEl.style.background = ARCH_COLOR[p1Selection.arch];
+    sizeArenaSquare(platformArenaEl);
     pfLayout();
   }
 
