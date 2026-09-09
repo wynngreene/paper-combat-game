@@ -68,7 +68,13 @@
 
   /* ================= Screen 1: Title ================= */
   #screen-title { padding: 0; }
-  #particle-canvas { position: absolute; inset: 0; z-index: 0; }
+  #particle-canvas {
+    position: absolute; z-index: 0;
+    top: 50%; left: 50%;
+    width: min(80vmin, 520px);
+    height: min(80vmin, 520px);
+    transform: translate(-50%, -50%);
+  }
 
   .title-top {
     position: relative; z-index: 2; flex: 0 0 auto;
@@ -204,6 +210,14 @@
     overflow: hidden; background: var(--panel); min-height: 0;
     background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
     background-size: 20px 20px; background-position: center;
+    /* Perfect 1:1 square: height still comes from flex:1 (fills whatever
+       vertical space is available in .battle-main), width is then derived
+       from that height via aspect-ratio instead of stretching to the
+       column's full width. max-width guards the rare case where the
+       height-derived width would be wider than the available column. */
+    aspect-ratio: 1 / 1;
+    align-self: center;
+    max-width: 100%;
   }
   #battle-ground { position: absolute; left: 0; right: 0; bottom: 12%; height: 2px; background: repeating-linear-gradient(90deg, var(--border-strong) 0, var(--border-strong) 8px, transparent 8px, transparent 16px); }
   #pf-ground { position: absolute; left: 0; right: 0; bottom: 33.333%; height: 2px; background: repeating-linear-gradient(90deg, var(--border-strong) 0, var(--border-strong) 8px, transparent 8px, transparent 16px); }
@@ -297,13 +311,27 @@
     .fighter-card .swatch { width: 40px; height: 40px; }
     .fighter-card .fname { font-size: 12px; }
 
-    /* FIX: #screen-platform was missing here, so on desktop its arena and
-       controls stayed stacked in a column instead of sitting side-by-side
-       like Battle's do. .battle-controls/.battle-main are shared classes
-       between the two screens, so both screen IDs must get this rule. */
-    #screen-battle, #screen-platform { flex-direction: row; gap: 14px; padding-top: calc(var(--safe-t) + 14px); }
-    .battle-controls { flex-direction: column; gap: 16px; width: 160px; flex: 0 0 auto; }
-    .pad, .diamond { justify-self: center; }
+    /* Landscape/desktop layout for Battle + Platform View: a 3-part
+       cluster — D-pad, the square arena, action diamond + Exit — centered
+       together horizontally in the screen. .battle-controls/.battle-main
+       are shared between both screens, so both screen IDs must stay in
+       sync here (this exact spot is where a past bug missed
+       #screen-platform — see the recurring-bug note at the top of this
+       file's history). .battle-controls is unwrapped with
+       display:contents so its children (pad/exit/diamond) become direct
+       flex items we can reorder independently around .battle-main. */
+    #screen-battle, #screen-platform {
+      flex-direction: row;
+      align-items: stretch;    /* .battle-main stretches full height so its square arena can grow as large as the screen allows */
+      justify-content: center; /* centers the whole pad + arena + diamond + exit cluster horizontally */
+      gap: 20px;
+      padding-top: calc(var(--safe-t) + 14px);
+    }
+    .battle-controls { display: contents; }
+    .battle-main { order: 0; flex: 0 0 auto; min-width: 0; }
+    .pad         { order: -1; align-self: center; flex: 0 0 auto; }
+    .diamond     { order: 1;  align-self: center; flex: 0 0 auto; }
+    .exit-battle { order: 2;  align-self: center; flex: 0 0 auto; }
   }
 
   @media (max-width: 380px) {
@@ -335,11 +363,9 @@
     .fighter-card .swatch { width: 44px; height: 44px; }
     .fighter-card .fname { font-size: 13px; }
 
-    /* Give the arena more visual weight on a big screen instead of a tiny
-       square floating next to a skinny control column */
+    /* Give the pad/diamond more visual weight on a big screen */
     .diamond { width: 148px; height: 148px; }
     .diamond-btn { width: 50px; height: 50px; }
-    .battle-controls { width: 190px; }
 
     .mode-badge { font-size: 10px; padding: 4px 8px; }
   }
