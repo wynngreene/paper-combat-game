@@ -13,8 +13,17 @@
   // Each new release: bump CURRENT_VERSION and add an entry to the FRONT
   // of CHANGELOG (newest first). The footer tag and version-history modal
   // both read from this array — nothing else needs to change by hand.
-  var CURRENT_VERSION = 'v0.1.3';
+  var CURRENT_VERSION = 'v0.1.4';
   var CHANGELOG = [
+    {
+      version: 'v0.1.4',
+      date: '2026-09-09',
+      notes: [
+        'Desktop/landscape layout: Platform View’s title is now pinned top-left and its redundant Back button is hidden (Exit already covers leaving the screen)',
+        'Desktop/landscape layout: Exit is now pinned to the screen’s bottom-right corner on both Battle and Platform View instead of sitting in the middle control cluster',
+        'Arena width math now ignores elements pinned out of the flex row (Exit, Platform View’s header) instead of still subtracting their width, which was leaving the arena narrower than it needed to be'
+      ]
+    },
     {
       version: 'v0.1.3',
       date: '2026-09-09',
@@ -115,17 +124,24 @@
   // physics). Keeping this ONE function used by both screens is what
   // avoids the classic bug in this project where a fix lands on one
   // screen and not the other.
-  // Expands any `display: contents` wrapper (e.g. .battle-controls) into
-  // its own children instead of counting it as a single box — a
-  // `display:contents` element has no rendered box of its own (its
-  // children become the real flex participants) but DOM APIs like
-  // `.children` still see it as one node, so a naive width sum silently
-  // gets a wrong (near-zero) answer for that item.
+  // Lists the elements that actually occupy space as flex-row items inside
+  // `container`, for the width math in sizeArenaSquare() below. Two things
+  // DOM APIs get wrong for this if used naively:
+  //  - `display: contents` (e.g. .battle-controls) has no box of its own —
+  //    its children become the real flex participants — but `.children`
+  //    still sees it as one node, so this expands into its children
+  //    instead of counting it as a (wrongly near-zero-width) single item.
+  //  - `position: absolute/fixed` (e.g. .exit-battle, Platform View's
+  //    .cs-header, both pinned to screen corners) or `display: none` take
+  //    no row space at all and must be skipped entirely, not counted.
   function expandedChildren(container) {
     var out = [];
     Array.prototype.forEach.call(container.children, function (child) {
-      if (getComputedStyle(child).display === 'contents') {
+      var cs = getComputedStyle(child);
+      if (cs.display === 'contents') {
         out = out.concat(expandedChildren(child));
+      } else if (cs.display === 'none' || cs.position === 'absolute' || cs.position === 'fixed') {
+        return; // out of flow — doesn't consume row space
       } else {
         out.push(child);
       }

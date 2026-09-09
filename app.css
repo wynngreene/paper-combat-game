@@ -328,7 +328,7 @@
     #screen-battle, #screen-platform {
       flex-direction: row;
       align-items: stretch;    /* .battle-main stretches full height so its square arena can grow as large as the screen allows */
-      justify-content: center; /* centers the whole pad + arena + diamond + exit cluster horizontally */
+      justify-content: center; /* centers the pad + arena + diamond cluster horizontally */
       gap: 20px;
       padding-top: calc(var(--safe-t) + 14px);
     }
@@ -336,7 +336,32 @@
     .battle-main { order: 0; flex: 0 0 auto; min-width: 0; }
     .pad         { order: -1; align-self: center; flex: 0 0 auto; }
     .diamond     { order: 1;  align-self: center; flex: 0 0 auto; }
-    .exit-battle { order: 2;  align-self: center; flex: 0 0 auto; }
+
+    /* Exit is pinned to the screen's own bottom-right corner instead of
+       sitting in the pad/arena/diamond row cluster — pulling it out of
+       flex flow here means sizeArenaSquare() in app.js has one fewer row
+       item to account for when it works out how much width is left for
+       the arena. Shared between both screens like everything else in
+       this block, so Battle and Platform stay in sync. */
+    .exit-battle {
+      position: absolute;
+      right: calc(var(--safe-r) + 14px);
+      bottom: calc(var(--safe-b) + 14px);
+      margin: 0;
+    }
+
+    /* Platform View's title header (Battle has none) — pinned to the
+       top-left corner instead of taking a row slot, its own Back button
+       hidden since Exit (now bottom-right) already covers leaving the
+       screen. */
+    #screen-platform .cs-header {
+      position: absolute;
+      top: calc(var(--safe-t) + 14px);
+      left: calc(var(--safe-l) + 14px);
+      margin-bottom: 0;
+      z-index: 5;
+    }
+    #screen-platform .cs-header .back-btn { display: none; }
   }
 
   @media (max-width: 380px) {
