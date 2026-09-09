@@ -9,6 +9,84 @@
   window.addEventListener('orientationchange', setVH);
   setVH();
 
+  // ---------- Version / changelog ----------
+  // Each new release: bump CURRENT_VERSION and add an entry to the FRONT
+  // of CHANGELOG (newest first). The footer tag and version-history modal
+  // both read from this array — nothing else needs to change by hand.
+  var CURRENT_VERSION = 'v0.1.1';
+  var CHANGELOG = [
+    {
+      version: 'v0.1.1',
+      date: '2026-09-08',
+      notes: [
+        'Fixed desktop layout: Platform View now gets the same side-by-side landscape layout as Battle (was stacking in a column)',
+        'Added a centered, max-width layout for Title and Character Select on desktop'
+      ]
+    },
+    {
+      version: 'v0.1.0',
+      date: '2026-09-08',
+      notes: [
+        'Initial prototype: Title, Character Select, Battle, and Platform View screens',
+        '18-fighter roster (School vs. Office, 3x3 archetype/tech grid) with placeholder colors',
+        'Platform View physics: gravity, jump, double jump, dash, fold, world-space scrolling camera',
+        '4-button diamond controls (Attack/Defend/Movement/Special) with touch and keyboard support'
+      ]
+    }
+  ];
+
+  function renderVersionTag() {
+    document.getElementById('version-tag').textContent = CURRENT_VERSION + ' · DESK WARS';
+  }
+  function buildVersionModal() {
+    var body = document.getElementById('version-modal-body');
+    body.innerHTML = CHANGELOG.map(function (entry) {
+      return '<div class="changelog-entry">' +
+        '<span class="cl-version">' + entry.version + '</span>' +
+        '<span class="cl-date">' + entry.date + '</span>' +
+        '<ul>' + entry.notes.map(function (n) { return '<li>' + n + '</li>'; }).join('') + '</ul>' +
+        '</div>';
+    }).join('');
+  }
+  function openVersionModal() {
+    buildVersionModal();
+    document.getElementById('version-modal').classList.add('active');
+  }
+  function closeVersionModal() {
+    document.getElementById('version-modal').classList.remove('active');
+  }
+  renderVersionTag();
+  var versionTagEl = document.getElementById('version-tag');
+  versionTagEl.addEventListener('click', openVersionModal);
+  versionTagEl.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openVersionModal(); }
+  });
+  document.getElementById('version-modal-close').addEventListener('click', closeVersionModal);
+  document.getElementById('version-modal').addEventListener('click', function (e) {
+    if (e.target.id === 'version-modal') closeVersionModal(); // click outside the box closes it
+  });
+  window.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && document.getElementById('version-modal').classList.contains('active')) closeVersionModal();
+  });
+
+  // ---------- Dev aid: layout-mode badge ----------
+  // Mirrors the actual media queries in app.css so the corner badge always
+  // reflects reality even if the breakpoints change later. Small Phone and
+  // Desktop are width tiers; Landscape is the separate side-by-side rule
+  // that can combine with either (e.g. a 900px+ window that's also
+  // landscape-oriented shows "Desktop + Landscape").
+  var mqSmallPhone = window.matchMedia('(max-width: 380px)');
+  var mqLandscapeRow = window.matchMedia('(min-width: 640px) and (orientation: landscape)');
+  var mqDesktop = window.matchMedia('(min-width: 900px)');
+  function updateModeBadge() {
+    var tier = mqSmallPhone.matches ? 'Small Phone' : (mqDesktop.matches ? 'Desktop' : 'Mobile');
+    var label = tier + (mqLandscapeRow.matches ? ' + Landscape' : '');
+    document.getElementById('mode-badge').textContent = label + ' (' + window.innerWidth + 'px)';
+  }
+  window.addEventListener('resize', updateModeBadge);
+  window.addEventListener('orientationchange', updateModeBadge);
+  updateModeBadge();
+
   // ---------- Screen navigation ----------
   function goto(id) {
     document.querySelectorAll('.screen').forEach(function (s) { s.classList.remove('active'); });

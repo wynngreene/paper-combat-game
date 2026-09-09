@@ -45,6 +45,27 @@
   }
   .screen.active { display: flex; }
 
+  /* ================= Dev aid: layout-mode badge ================= */
+  /* Reads which CSS breakpoint below is currently matching (see app.js
+     updateModeBadge()) so a missing rule on one screen is obvious without
+     opening devtools. Sits above every screen, including modals. */
+  .mode-badge {
+    position: fixed;
+    top: calc(var(--safe-t) + 6px);
+    right: calc(var(--safe-r) + 6px);
+    z-index: 80;
+    pointer-events: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--zoner);
+    background: rgba(20,23,26,0.75);
+    border: 1px solid var(--border-strong);
+    border-radius: 5px;
+    padding: 3px 6px;
+  }
+
   /* ================= Screen 1: Title ================= */
   #screen-title { padding: 0; }
   #particle-canvas { position: absolute; inset: 0; z-index: 0; }
@@ -92,7 +113,8 @@
   .footer-stats .stat b { display: block; color: var(--text); font-size: 15px; font-weight: 700; }
   .footer-nav { display: flex; justify-content: center; gap: 10px; }
   .footer-nav button { font-size: 10px; padding: 6px 14px; border-radius: 14px; letter-spacing: 0.04em; }
-  .footer-version { text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--border-strong); margin-top: 8px; }
+  .footer-version { text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--border-strong); margin-top: 8px; cursor: pointer; }
+  .footer-version:active { color: var(--text-dim); }
 
   /* ================= Screen 2: Character Select ================= */
   #screen-select { padding-top: calc(var(--safe-t) + 12px); }
@@ -229,6 +251,46 @@
   .opt-toggle { padding: 6px 12px; border-radius: 12px; font-size: 11px; }
   .opt-toggle.on { border-color: var(--rush); color: var(--rush); }
 
+  /* ================= Version History Modal ================= */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0; z-index: 90;
+    background: rgba(10,12,14,0.72);
+    align-items: center; justify-content: center;
+    padding: 20px calc(var(--safe-r) + 20px) calc(var(--safe-b) + 20px) calc(var(--safe-l) + 20px);
+  }
+  .modal-overlay.active { display: flex; }
+  .modal-box {
+    width: 100%; max-width: 360px; max-height: 78vh;
+    background: var(--panel); border: 1px solid var(--border-strong);
+    border-radius: 14px; overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+  .modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px; border-bottom: 1px solid var(--border);
+    flex: 0 0 auto;
+  }
+  .modal-header h3 { margin: 0; font-size: 14px; letter-spacing: 0.03em; }
+  .modal-close {
+    background: none; border: none; color: var(--text-dim);
+    font-size: 20px; line-height: 1; padding: 2px 8px; border-radius: 6px;
+  }
+  .modal-close:active { color: var(--text); background: var(--border); }
+  .modal-body { padding: 6px 16px 16px; overflow-y: auto; }
+  .changelog-entry { padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .changelog-entry:last-child { border-bottom: none; }
+  .changelog-entry .cl-version {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700;
+    color: var(--rush); letter-spacing: 0.03em;
+  }
+  .changelog-entry .cl-date {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--text-dim);
+    margin-left: 6px;
+  }
+  .changelog-entry ul { margin: 6px 0 0; padding-left: 16px; }
+  .changelog-entry li { font-size: 11px; color: var(--text); margin-bottom: 3px; line-height: 1.4; }
+
   /* ================= Responsive: landscape / wider viewports ================= */
   @media (min-width: 640px) and (orientation: landscape) {
     .roster-grid { grid-template-columns: repeat(3, minmax(90px, 120px)); gap: 14px; }
@@ -278,4 +340,6 @@
     .diamond { width: 148px; height: 148px; }
     .diamond-btn { width: 50px; height: 50px; }
     .battle-controls { width: 190px; }
+
+    .mode-badge { font-size: 10px; padding: 4px 8px; }
   }

@@ -15,6 +15,12 @@
 
 <div class="app">
 
+  <!-- Dev/QA aid: shows which CSS breakpoint is currently matching, so a
+       media query written for one screen but missed on another (the
+       recurring bug pattern in this project) is visible at a glance on
+       every screen without having to open devtools. -->
+  <div class="mode-badge" id="mode-badge"></div>
+
   <!-- ============ SCREEN 1: TITLE ============ -->
   <section class="screen active" id="screen-title">
     <canvas id="particle-canvas"></canvas>
@@ -35,7 +41,7 @@
         <div class="stat"><b id="stat-wins-title">0</b>Wins</div>
         <div class="stat"><b>2 / 18</b>Unlocked</div>
       </div>
-      <div class="footer-version">v0.1.0-prototype &middot; DESK WARS</div>
+      <div class="footer-version" id="version-tag" role="button" tabindex="0">v0.1.0-prototype &middot; DESK WARS</div>
     </div>
   </section>
 
@@ -153,6 +159,17 @@
       </div>
     </div>
   </section>
+
+  <!-- ============ VERSION HISTORY MODAL ============ -->
+  <div class="modal-overlay" id="version-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Version History</h3>
+        <button class="modal-close" id="version-modal-close" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body" id="version-modal-body"></div>
+    </div>
+  </div>
 
 </div>
 
